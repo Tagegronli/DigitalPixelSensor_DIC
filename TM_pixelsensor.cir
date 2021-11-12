@@ -1,0 +1,97 @@
+* Analog Circuit for Digital pixel sensor
+* Designed by Tage Grønli and Magnus Oddstøl
+* with help from Carsten Wulff
+
+.SUBCKT PIXEL_SENSOR VBN1 VRAMP VRESET ERASE EXPOSE READ
++ DATA_7 DATA_6 DATA_5 DATA_4 DATA_3 DATA_2 DATA_1 DATA_0 VDD VSS
+
+XS1 VRESET VSTORE ERASE EXPOSE VDD VSS SENSOR
+XC1 VCMP_OUT VSTORE VRAMP VDD VSS COMP
+
+XM1 READ VCMP_OUT DATA_7 DATA_6 DATA_5 DATA_4 DATA_3 DATA_2 DATA_1 DATA_0 VDD VSS MEMORY
+
+.ENDS
+
+.SUBCKT MEMORY READ VCMP_OUT
++ DATA_7 DATA_6 DATA_5 DATA_4 DATA_3 DATA_2 DATA_1 DATA_0 VDD VSS
+
+XM1 VCMP_OUT DATA_0 READ VSS MEMCELL
+XM2 VCMP_OUT DATA_1 READ VSS MEMCELL
+XM3 VCMP_OUT DATA_2 READ VSS MEMCELL
+XM4 VCMP_OUT DATA_3 READ VSS MEMCELL
+XM5 VCMP_OUT DATA_4 READ VSS MEMCELL
+XM6 VCMP_OUT DATA_5 READ VSS MEMCELL
+XM7 VCMP_OUT DATA_6 READ VSS MEMCELL
+XM8 VCMP_OUT DATA_7 READ VSS MEMCELL
+
+.ENDS
+
+.SUBCKT MEMCELL CMP DATA READ VSS
+M1 VG CMP DATA VSS nmos  w=0.2u  l=0.13u
+M2 DATA READ DMEM VSS nmos  w=0.4u  l=0.13u
+M3 DMEM VG VSS VSS nmos  w=1u  l=0.13u
+C1 VG VSS 1p
+.ENDS
+
+
+********************
+.param width = 0.65u
+.param length = 0.5u
+********************
+
+*SENSOR
+**************************************************
+.SUBCKT SENSOR VRESET VSTORE ERASE EXPOSE VDD VSS
+
+* Capacitor to model gate-source capacitance
+C1 VSTORE VSS 100f
+Rleak VSTORE VSS 100T
+
+* Nmos to expose signal VPG -> VSTORE
+MN1 VPG EXPOSE VSTORE VSS nmos W={width} L=length
+
+* Nmos for reset av VSTORE
+MN2 VRESET ERASE VSTORE VSS nmos W={width} L=length
+
+
+* Model photocurrent
+Rphoto VPG VSS 0.6G
+.ENDS
+**************************************************
+
+
+*COMPARATOR
+**************************************************
+
+.SUBCKT COMP VCMP_OUT VSTORE VRAMP VDD VSS 
+*****************
+* Current mirror transistor from the SUN_TR_GF130N library
+IPB1 0 VBN1 dc 2u
+XMNB0 VBN1 VBN1 VSS VSS NCHCM2
+
+
+*Differential input gain stage:
+*Current mirror
+MP1 NODE1 NODE1 VDD VDD pmos W={width} L=length
+MP2 NODE3 NODE1 VDD VDD pmos W=width L=length
+
+* Differential pair (x3)
+MN1 NODE1 VSTORE NODE_DP1 VSS nmos W={width} L=length
+MN2 NODE3 VRAMP NODE_DP3 VSS nmos W={width} L=length
+
+MN6 NODE_DP1 VSTORE NODE_DP2 VSS nmos W={width} L=length
+MN7 NODE_DP3 VRAMP NODE_DP4 VSS nmos W={width} L=length
+
+MN8 NODE_DP2 VSTORE NODE2 VSS nmos W={width} L=length
+MN9 NODE_DP4 VRAMP NODE2 VSS nmos W={width} L=length
+
+MN3 NODE2 BN1 VSS VSS nmos W={width} L=length
+
+*Buffer / inverter:
+MP3 NODE4 NODE3 VDD VDD pmos W=width L=length
+MN4 NODE4 BN1 VSS VSS nmos W=width L=length
+MP4 VCMP_OUT NODE4 VDD VDD pmos W=width L=length
+MN5 VCMP_OUT NODE4 VSS VSS nmos W=width L=length
+
+.ENDS
+*************************************************
