@@ -35,7 +35,7 @@ C1 VG VSS 1p
 
 
 ********************
-.param width = 0.65u
+.param width = 0.16u
 .param length = 0.5u
 ********************
 
@@ -50,12 +50,12 @@ Rleak VSTORE VSS 100T
 * Nmos to expose signal VPG -> VSTORE
 MN1 VPG EXPOSE VSTORE VSS nmos W={width} L=length
 
-* Nmos for reset av VSTORE
+* Nmos for reset of VSTORE
 MN2 VRESET ERASE VSTORE VSS nmos W={width} L=length
 
 
 * Model photocurrent
-Rphoto VPG VSS 0.6G
+Rphoto VPG VSS 0.5G
 .ENDS
 **************************************************
 
@@ -64,7 +64,6 @@ Rphoto VPG VSS 0.6G
 **************************************************
 
 .SUBCKT COMP VCMP_OUT VSTORE VRAMP VDD VSS 
-*****************
 * Current mirror transistor from the SUN_TR_GF130N library
 IPB1 0 VBN1 dc 2u
 XMNB0 VBN1 VBN1 VSS VSS NCHCM2
@@ -76,14 +75,8 @@ MP1 NODE1 NODE1 VDD VDD pmos W={width} L=length
 MP2 NODE3 NODE1 VDD VDD pmos W=width L=length
 
 * Differential pair (x3)
-MN1 NODE1 VSTORE NODE_DP1 VSS nmos W={width} L=length
-MN2 NODE3 VRAMP NODE_DP3 VSS nmos W={width} L=length
-
-MN6 NODE_DP1 VSTORE NODE_DP2 VSS nmos W={width} L=length
-MN7 NODE_DP3 VRAMP NODE_DP4 VSS nmos W={width} L=length
-
-MN8 NODE_DP2 VSTORE NODE2 VSS nmos W={width} L=length
-MN9 NODE_DP4 VRAMP NODE2 VSS nmos W={width} L=length
+MN1 NODE1 VSTORE NODE2 VSS nmos W={width*5} L=length
+MN2 NODE3 VRAMP NODE2 VSS nmos W={width*5} L=length
 
 MN3 NODE2 BN1 VSS VSS nmos W={width} L=length
 
