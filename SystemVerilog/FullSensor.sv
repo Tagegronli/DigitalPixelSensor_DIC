@@ -4,15 +4,15 @@ module Sensor (
     inout [31:0] data
 );
     
-    logic bias, ramp, erase, expose, read, convert;
+    logic BIAS, RAMP_CLK, erase, expose, read, convert;
 
     parameter integer expose_time = 255;
 
-    SENSOR_ARRAY array(bias, ramp,erase, expose, read, data[7:0], data[15:8], data[23:16], data[31:24]);
+    SENSOR_ARRAY array(BIAS, RAMP_CLK,erase, expose, read, data[7:0], data[15:8], data[23:16], data[31:24]);
     pixelSensorFsm #(.c_expose(expose_time)) fsm(clk, reset, erase, expose, read, convert);
 
-    assign ramp = convert ? clk : 0;
-    assign bias = expose ? clk : 0;
+    assign RAMP_CLK = convert ? clk : 0;
+    assign BIAS = expose ? clk : 0;
 
     logic[7:0] counter;
 
